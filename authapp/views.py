@@ -29,3 +29,7 @@ def register(request):
         form = UserRegisterForm()
     context = {'title': 'Geekshop - Регистрация', 'form':form}
     return render(request, 'authapp/register.html',context)
+
+def logout(request):
+    auth.logout(request)
+    return HttpResponseRedirect(reverse('index'))
