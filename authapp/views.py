@@ -3,6 +3,7 @@ from authapp.forms import UserLoginForm, UserRegisterForm, UserProfileForm
 from django.contrib import auth, messages
 from django.urls import reverse
 from basketapp.models import Basket
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def login(request):
@@ -36,6 +37,7 @@ def logout(request):
     auth.logout(request)
     return HttpResponseRedirect(reverse('index'))
 
+@login_required
 def profile(request):
     if request.method == 'POST':
         form = UserProfileForm(data=request.POST, files=request.FILES, instance=request.user)
@@ -44,6 +46,17 @@ def profile(request):
             return HttpResponseRedirect(reverse('users:profile'))
     else:
         form = UserProfileForm(instance=request.user)
+
+   # total_quantity = 0
+   # total_sum = 0
+   # for basket in baskets:
+     #   total_quantity += basket.quantity
+      #  total_sum += basket.sum()
+
+    #total_quantity = sum(basket.quantity for basket in baskets)
+    #total_sum = sum(basket.sum() for basket in baskets)
+
     context = {'title': 'Geekshop - Личный Кабинет', 'form':form,
-               'baskets': Basket.objects.all(),}
+               'baskets': Basket.objects.filter(user=request.user),}
+
     return render(request, 'authapp/profile.html', context)
