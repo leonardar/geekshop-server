@@ -23,8 +23,12 @@ def basket_add(request, product_id=None):
 
 @login_required
 def basket_remove(request, id):
-    Basket.objects.get(id=id).delete()
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    if request.is_ajax():
+        Basket.objects.get(id=id).delete()
+        baskets = Basket.objects.filter(user=request.user)
+        context = {'baskets': baskets}
+        result = render_to_string('basketapp/basket.html', context)
+        return JsonResponse({'result': result})
 
 
 def basket_edit(request, id, quantity):
