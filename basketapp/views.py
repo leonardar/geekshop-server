@@ -4,7 +4,18 @@ from mainapp.models import Product
 from basketapp.models import Basket
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 
+# class BasketAddView(UpdateView):
+#
+#   model = Basket
+#   template_name = 'basketapp/basket.html'
+#   success_url = reverse_lazy('baskets: basket.html')
+#
+#   def get(self, request, *args, **kwargs):
+#       self.referer = request.META.get("HTTP_REFERER", "")
 
 @login_required
 def basket_add(request, product_id=None):
