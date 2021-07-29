@@ -13,12 +13,12 @@ def save_user_profile(backend, user, response, *args, **kwargs):
     if backend.name != 'vk-oauth2':
         return
 
-    api_url = urlunparse(('https'
+    api_url = urlunparse(('https',
                           'api.vk.com',
-                          '/method/user.get',
+                          '/method/users.get',
                           None,
-                          urlencode(OrderedDict(fields=','.join('bdate', 'sex', 'about')),
-                                    access_token=response['access_token'], v='5.131'),
+                          urlencode(OrderedDict(fields=','.join(('bdate', 'sex', 'about')),
+                                    access_token=response['access_token'], v='5.131')),
                           None))
     resp = requests.get(api_url)
     if resp.status_code != 200:

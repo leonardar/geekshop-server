@@ -104,7 +104,7 @@ def logout(request):
     auth.logout(request)
     return HttpResponseRedirect(reverse('index'))
 
-# @transaction.atomic
+@transaction.atomic
 @login_required
 def profile(request):
     if request.method == 'POST':
