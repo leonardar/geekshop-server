@@ -28,8 +28,11 @@ urlpatterns = [
     path('users/', include(('authapp.urls', 'authapp'), namespace='users')),
     path('baskets/', include(('basketapp.urls', 'basketapp'), namespace='baskets')),
     path('admin-staff/', include(('adminapp.urls', 'adminapp'), namespace='admin_staff')),
+    path('', include('social_django.urls', namespace='social')),
 
 ]
+
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

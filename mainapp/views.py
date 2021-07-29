@@ -1,20 +1,35 @@
 from django.shortcuts import render
 from mainapp.models import Product, ProductCategory
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from basketapp.models import Basket
+
 
 # Create your views here.
 def index(request):
-    context = {
+    if request.user.is_authenticated:
+        baskets = Basket.objects.filter(user=request.user)
+        context = {
         'title': 'index',
-    }
+        'baskets': baskets}
+        return context
+
+    context = {'title': 'index'}
+
     return render(request, 'mainapp/index.html', context)
 
 
 def products(request, category_id=None,page=1):
-    context = {
+    if request.user.is_authenticated:
+        baskets = Basket.objects.filter(user=request.user)
+        context = {
         'title': 'Geekshop - Каталог',
         'categories': ProductCategory.objects.all(),
-    }
+        'baskets': baskets}
+        return context
+
+    context = {'title': 'Geekshop - Каталог',
+                'categories': ProductCategory.objects.all()}
+
     products = Product.objects.filter(category_id=category_id) if category_id else Product.objects.all()
     paginator = Paginator(products, per_page=3)
     try:

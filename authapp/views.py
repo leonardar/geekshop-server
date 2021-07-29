@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponseRedirect
-from authapp.forms import UserLoginForm, UserRegisterForm, UserProfileForm
+from authapp.forms import UserLoginForm, UserRegisterForm, UserProfileForm, UserProfileEditForm
 from django.contrib import auth, messages
 from django.urls import reverse
 from basketapp.models import Basket
@@ -20,30 +20,32 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, RedirectView
 from geekshop import settings
 from django.core.mail import send_mail
+from authapp.forms import UserProfileEditForm
+from django.db import transaction
+
 
 # Create your views here.
 
 class UserLoginView(FormView):
-
     model = User
     template_name = 'authapp/login.html'
     form_class = UserLoginForm
     success_url = reverse_lazy('index')
-
 
     def post(self, request):
         username = request.POST['username']
         password = request.POST['password']
         user = auth.authenticate(username=username, password=password)
         if user and user.is_active:
-            auth.login(request, user)
+            auth.login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return HttpResponseRedirect(self.success_url)
-        return render (request, 'authapp/login.html', self.get_context_data())
+        return render(request, 'authapp/login.html', self.get_context_data())
 
     def get_context_data(self, **kwargs):
         context = super(UserLoginView, self).get_context_data(**kwargs)
         context.update({'title': 'Geekshop - Авторизация'})
         return context
+
 
 # def login(request):
 #     if request.method == 'POST':
@@ -59,15 +61,6 @@ class UserLoginView(FormView):
 #         form = UserLoginForm()
 #     context = {'titles': 'Geekshop - Авторизация', 'form': form}
 #     return render(request, 'authapp/login.html', context)
-
-def send_verify_email(user):
-
-    verify_link = reverse('users:verify', args=[user.email, user.activation_key])
-    title = f'Активация на сайте пользователя {user.username}'
-    message = f'Для активации вашей учётной записи {user.email} на портале {settings.DOMAIN_NAME}' \
-            f'перейдите по ссылке : \n{settings.DOMAIN_NAME}{verify_link}'
-
-    return send_mail(title, message, settings.EMAIL_HOST, [user.email], fail_silently=False)
 
 def register(request):
     if request.method == 'POST':
@@ -86,6 +79,13 @@ def register(request):
     context = {'title': 'Geekshop - Регистрация', 'form': form}
     return render(request, 'authapp/register.html', context)
 
+def send_verify_email(user):
+    verify_link = reverse('users:verify', args=[user.email, user.activation_key])
+    title = f'Активация на сайте пользователя {user.username}'
+    message = f'Для активации вашей учётной записи {user.email} на портале {settings.DOMAIN_NAME}' \
+              f'перейдите по ссылке : \n{settings.DOMAIN_NAME}{verify_link}'
+
+    return send_mail(title, message, settings.EMAIL_HOST, [user.email], fail_silently=False)
 
 def verify(request, email, activation_key):
     try:
@@ -93,27 +93,29 @@ def verify(request, email, activation_key):
         if user.activation_key == activation_key and not user.activation_key_is_expired():
             user.is_active = True
             user.save()
-            auth.login(request, user)
+            auth.login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return render(request, 'authapp/verification.html')
     except Exception as err:
         print(f'error activation user: {err.args}')
-        return HttpResponseRedirect(reverse ('index'))
+        return HttpResponseRedirect(reverse('index'))
 
 
 def logout(request):
     auth.logout(request)
     return HttpResponseRedirect(reverse('index'))
 
-
+# @transaction.atomic
 @login_required
 def profile(request):
     if request.method == 'POST':
         form = UserProfileForm(data=request.POST, files=request.FILES, instance=request.user)
-        if form.is_valid():
+        edit_form = UserProfileEditForm(request.POST, request.FILES, instance=request.user.userprofile)
+        if form.is_valid() and edit_form.is_valid():
             form.save()
             return HttpResponseRedirect(reverse('users:profile'))
     else:
         form = UserProfileForm(instance=request.user)
+        edit_form = UserProfileEditForm(instance=request.user.userprofile)
 
     # total_quantity = 0
     # total_sum = 0
@@ -124,7 +126,25 @@ def profile(request):
     # total_quantity = sum(basket.quantity for basket in baskets)
     # total_sum = sum(basket.sum() for basket in baskets)
 
-    context = {'title': 'Geekshop - Личный Кабинет', 'form': form,
+    context = {'title': 'Geekshop - Личный Кабинет', 'form': form, 'edit_form': edit_form,
                'baskets': Basket.objects.filter(user=request.user), }
 
     return render(request, 'authapp/profile.html', context)
+#
+# def edit(request):
+#     title = 'Редактирование'
+#
+#     if request == 'POST':
+#         edit_form = UserProfileEditForm(request.POST, request.FILES, instance=request.user.userprofile)
+#         if edit_form.is_valid():
+#             edit_form.save()
+#             return HttpResponseRedirect(reverse('auth:edit'))
+#         else:
+#             edit_form = UserProfileEditForm(instance=request.user)
+#
+#     context = {
+#         'title': title,
+#         'edit_form': edit_form
+#         }
+#     return render(request, 'authapp/edit.html', context)
+
