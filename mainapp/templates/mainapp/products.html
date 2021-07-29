@@ -11,12 +11,12 @@
         <div class="col-lg-3">
 
             <h1 class="my-4">GeekShop</h1>
-            {% for category in categories %}
-            <div class="list-group">
-                <a href="{% url 'mainapp:index' %}"
+            <a href="{% url 'mainapp:index' %}"
                    class="list-group-item">
                     Все категории
-                </a>
+            </a>
+            {% for category in categories %}
+            <div class="list-group">
                 <a href="{% url 'mainapp:product' category.id %}"
                    class="list-group-item">
                     {{ category.name }}
