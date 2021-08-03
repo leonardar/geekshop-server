@@ -28,8 +28,8 @@ urlpatterns = [
     path('users/', include(('authapp.urls', 'authapp'), namespace='users')),
     path('baskets/', include(('basketapp.urls', 'basketapp'), namespace='baskets')),
     path('admin-staff/', include(('adminapp.urls', 'adminapp'), namespace='admin_staff')),
+    path('orders/', include(('ordersapp.urls','ordersapp'), namespace='orders')),
     path('', include('social_django.urls', namespace='social')),
-
 ]
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
