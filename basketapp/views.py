@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from mainapp.models import Product
@@ -34,6 +36,7 @@ def basket_add(request, product_id=None):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
+
 @login_required
 def basket_remove(request, id):
     Basket.objects.get(id=id).delete()
@@ -52,3 +55,5 @@ def basket_edit(request, id, quantity):
         context = {'baskets': baskets}
         result = render_to_string('basketapp/basket.css', context)
         return JsonResponse({'result': result})
+
+
