@@ -88,7 +88,7 @@ class OrderUpdate(UpdateView):
                                              extra=1)
 
         if self.request.POST:
-            formset = OrderFormSet(self.request.POST, instance=self.object)
+            data['orderitems'] = OrderFormSet(self.request.POST, instance=self.object)
         else:
             formset = OrderFormSet(instance=self.object)
             for form in formset.forms:

@@ -7,3 +7,4 @@ sqlparse==0.4.1
 social-auth-app-django
 django-environ
 requests
+psycopg2-binary
