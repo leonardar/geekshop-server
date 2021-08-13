@@ -8,3 +8,5 @@ social-auth-app-django
 django-environ
 requests
 psycopg2-binary
+django-debug-toolbar
+django-debug-toolbar-template-profiler
