@@ -1,7 +1,8 @@
 from django.db import models
 from authapp.models import User
 from mainapp.models import Product
-
+from django.utils.functional import cached_property
+from geekshop import settings
 
 # Create your models here.
 
@@ -15,7 +16,11 @@ from mainapp.models import Product
 
 class Basket(models.Model):
     # objects = BasketQuerySet.as_manager()
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='basket',
+    )
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=0)
     created_timestamp = models.DateTimeField(auto_now_add=True)
@@ -23,16 +28,21 @@ class Basket(models.Model):
     def __str__(self):
         return f'Корзина для {self.user.username} | Продукт {self.product.name}'
 
-    def sum(self):
+    def product_cost(self):
         return self.quantity * self.product.price
 
-    def total_quantity(self):
-        baskets = Basket.objects.filter(user=self.user)
-        return sum(basket.quantity for basket in baskets)
+    @cached_property
+    def get_items_cached(self):
+        return self.user.basket.select_related()
 
-    def total_sum(self):
-        baskets = Basket.objects.filter(user=self.user)
-        return sum(basket.sum() for basket in baskets)
+    def total_quantity(self):
+        _items = self.get_items_cached
+        _total_quantity = sum(list(map(lambda x: x.quantity, _items)))
+        return _total_quantity
+
+    def total_cost(self):
+        _items = self.get_items_cached
+        return sum(basket.product_cost() for basket in _items)
 
     def delete(self):
         self.product.quantity += self.quantity
