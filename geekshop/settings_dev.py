@@ -11,7 +11,7 @@ from pathlib import Path
 import os
 import environ
 
-DEBUG = False
+DEBUG = True
 
 env = environ.Env()
 environ.Env.read_env()
@@ -29,7 +29,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 
 # ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 
@@ -102,19 +102,10 @@ WSGI_APPLICATION = 'geekshop.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': {
-        'NAME': 'geekshop',
-        'ENGINE': 'django.db.backends.postgresql',
-        'USER': 'django',
-        'PASSWORD': 'geekbrains',
-        'HOST': 'localhost'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
