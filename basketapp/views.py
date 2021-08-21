@@ -1,10 +1,24 @@
+from django.db import transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from mainapp.models import Product
 from basketapp.models import Basket
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 
+# class BasketAddView(UpdateView):
+#
+#   model = Basket
+#   template_name = 'basketapp/basket.css'
+#   success_url = reverse_lazy('baskets: basket.css')
+#
+#   def get(self, request, *args, **kwargs):
+#       self.referer = request.META.get("HTTP_REFERER", "")
 
 @login_required
 def basket_add(request, product_id=None):
@@ -15,10 +29,12 @@ def basket_add(request, product_id=None):
         Basket.objects.create(user=request.user, product=product, quantity=1)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
-        basket = baskets.first()
-        basket.quantity += 1
-        basket.save()
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        with transaction.atomic():
+            basket = baskets.first()
+            basket.quantity += 1
+            basket.save()
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 
 @login_required
@@ -39,3 +55,5 @@ def basket_edit(request, id, quantity):
         context = {'baskets': baskets}
         result = render_to_string('basketapp/basket.html', context)
         return JsonResponse({'result': result})
+
+
